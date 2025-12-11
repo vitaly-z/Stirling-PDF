@@ -157,7 +157,6 @@ public class CustomLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
 
         // Redirect based on OAuth2 provider
         switch (registrationId.toLowerCase()) {
-            case "keycloak" -> handleOidcLogout(request, response, oAuthToken, oauth, redirectUrl);
             case "github", "google" -> {
                 // These providers don't support OIDC logout
                 log.info(
@@ -166,10 +165,7 @@ public class CustomLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
                         redirectUrl);
                 response.sendRedirect(redirectUrl);
             }
-            default -> {
-                // Try generic OIDC logout for any other provider
-                handleOidcLogout(request, response, oAuthToken, oauth, redirectUrl);
-            }
+            default -> handleOidcLogout(response, oAuthToken, oauth, redirectUrl);
         }
     }
 
@@ -178,7 +174,6 @@ public class CustomLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
      * Discovered endpoint 3. Keycloak fallback (if isKeycloak=true) 4. Local logout
      */
     private void handleOidcLogout(
-            HttpServletRequest request,
             HttpServletResponse response,
             OAuth2AuthenticationToken oAuthToken,
             OAUTH2 oauth,
@@ -294,7 +289,7 @@ public class CustomLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
      */
     private String checkForErrors(HttpServletRequest request) {
         String errorMessage;
-        String path = "logout=true";
+        String path = "?logout=true";
 
         if (request.getParameter("oAuth2AuthenticationErrorWeb") != null) {
             path = "errorOAuth=userAlreadyExistsWeb";
